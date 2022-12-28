@@ -40,6 +40,9 @@ class GetConnectorsCommandTest extends IntegrationTest {
     @InjectCommandContext
     KcctlCommandContext<GetConnectorsCommand> context;
 
+    @InjectCommandContext
+    KcctlCommandContext<PauseConnectorCommand> contextOfPauseConnector;
+
     @Test
     public void should_print_empty_connectors_() {
         int exitCode = context.commandLine().execute();
@@ -71,5 +74,34 @@ class GetConnectorsCommandTest extends IntegrationTest {
                         "NAME    TYPE     STATE     TASKS",
                         "test1   source   \u001B[32mRUNNING\u001B[0m   0: \u001B[32mRUNNING\u001B[0m",
                         "test2   source   \u001B[32mRUNNING\u001B[0m   0: \u001B[32mRUNNING\u001B[0m");
+    }
+
+    @Test
+    public void should_print_state_in_yellow_color_for_pause_connectors() {
+        registerTestConnector("test1");
+        registerTestConnector("test2");
+        registerTestConnector("test3");
+
+        contextOfPauseConnector.commandLine().execute("test3");
+
+        Pattern singleTaskPattern = Pattern.compile(".*[0-9]+\\:\\s+(.*\\:[0-9]+\\s+).*");
+
+        int exitCode = context.commandLine().execute();
+        assertThat(exitCode).isEqualTo(CommandLine.ExitCode.OK);
+        assertThat(context.output().toString().trim().lines().map(m -> {
+            String ret = m;
+            Matcher matcher = singleTaskPattern.matcher(ret);
+            if (matcher.matches()) {
+                String workId = matcher.group(1);
+                ret = ret.replace(workId, "");
+            }
+            return ret;
+        }))
+                .map(String::trim)
+                .containsExactly(
+                        "NAME    TYPE     STATE     TASKS",
+                        "test1   source   \u001B[32mRUNNING\u001B[0m   0: \u001B[32mRUNNING\u001B[0m",
+                        "test2   source   \u001B[32mRUNNING\u001B[0m   0: \u001B[32mRUNNING\u001B[0m",
+                        "test3   source   \u001B[33mPAUSED\u001B[0m    0: \u001B[33mRUNNING\u001B[0m");
     }
 }
