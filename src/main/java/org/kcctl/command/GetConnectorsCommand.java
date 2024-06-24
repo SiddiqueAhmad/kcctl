@@ -36,9 +36,7 @@ import com.github.freva.asciitable.HorizontalAlign;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
-import static org.kcctl.util.Colors.ANSI_GREEN;
-import static org.kcctl.util.Colors.ANSI_RED;
-import static org.kcctl.util.Colors.ANSI_RESET;
+import static org.kcctl.util.Colors.*;
 
 @Command(name = "connectors", description = "Displays information about deployed connectors")
 public class GetConnectorsCommand implements Runnable {
@@ -109,7 +107,8 @@ public class GetConnectorsCommand implements Runnable {
                 },
                 data);
 
-        spec.commandLine().getOut().println(table.replace("RUNNING", ANSI_GREEN + "RUNNING" + ANSI_RESET).replace("FAILED", ANSI_RED + "FAILED" + ANSI_RESET));
+        spec.commandLine().getOut().println(table.replace("RUNNING", ANSI_GREEN + "RUNNING" + ANSI_RESET).replace("FAILED", ANSI_RED + "FAILED" + ANSI_RESET)
+                .replace("PAUSED", ANSI_YELLOW + "PAUSED" + ANSI_RESET));
         spec.commandLine().getOut().println();
     }
 
